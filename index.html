@@ -1,975 +1,576 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Aura — Your Sobriety Companion</title>
-  <!-- Tailwind CSS -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Aura — Sobriety Companion</title>
+  <meta name="theme-color" content="#05070B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            oled: '#05070B',
-            surface: '#0D1117',
-            surfaceHighlight: '#161D27',
-            calmCyan: '#38BDF8',
-            deepTeal: '#0F766E',
-            warmAmber: '#F59E0B',
-            softViolet: '#818CF8',
-            emeraldSafe: '#10B981',
-          },
-          animation: {
-            'pulse-subtle': 'pulseSubtle 4s ease-in-out infinite',
-            'breathe': 'breathe 8s ease-in-out infinite',
-          },
-          keyframes: {
-            pulseSubtle: {
-              '0%, 100%': { transform: 'scale(1)', opacity: '0.9' },
-              '50%': { transform: 'scale(1.04)', opacity: '1' },
-            },
-            breathe: {
-              '0%, 100%': { transform: 'scale(0.85)' },
-              '50%': { transform: 'scale(1.15)' },
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* OLED deep black optimization */
     body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background-color: #05070B;
       color: #E2E8F0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
-      touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      overscroll-behavior-y: none;
+      user-select: none;
     }
-    
-    /* Smooth custom scrollbars */
-    ::-webkit-scrollbar {
+    .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
     }
-    ::-webkit-scrollbar-track {
-      background: transparent;
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #1E293B;
+      border-radius: 4px;
     }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.12);
-      border-radius: 9999px;
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 0.25; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(1.04); }
     }
-
-    /* Ambient glow */
-    .blob-ambient-glow {
-      filter: blur(36px);
-      transition: all 0.8s ease-out;
-    }
-
-    /* Message bounce animation */
-    .msg-appear {
-      animation: msgPop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes msgPop {
-      0% { opacity: 0; transform: translateY(10px) scale(0.97); }
-      100% { opacity: 1; transform: translateY(0) scale(1); }
+    .aura-glow {
+      animation: subtlePulse 5s ease-in-out infinite;
     }
   </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex flex-col bg-oled select-none">
+<body class="h-screen w-screen overflow-hidden flex flex-col justify-between antialiased">
 
-  <!-- TOP HEADER -->
-  <header class="flex-none pt-safe px-4 py-3 bg-oled/90 backdrop-blur-md border-b border-surfaceHighlight/50 z-20 flex items-center justify-between">
-    <div class="flex items-center space-x-2.5">
-      <div class="relative w-3 h-3">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-3 w-3 bg-emeraldSafe"></span>
-      </div>
+  <!-- Aura Background Atmosphere -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div id="auraAura" class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full blur-3xl opacity-30 aura-glow bg-cyan-500 transition-colors duration-1000"></div>
+  </div>
+
+  <!-- Top Header Bar -->
+  <header class="relative z-10 flex items-center justify-between px-5 py-4 border-b border-slate-800/40 backdrop-blur-md bg-[#05070B]/70">
+    <div class="flex items-center gap-2.5">
+      <div id="headerDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] transition-colors duration-500"></div>
       <div>
-        <h1 class="text-base font-semibold text-white tracking-wide flex items-center gap-1.5">
-          Aura
-          <span class="text-[10px] font-normal px-2 py-0.5 rounded-full bg-surfaceHighlight text-calmCyan border border-calmCyan/20">Companion</span>
+        <h1 class="text-sm font-semibold tracking-wide text-white flex items-center gap-1.5">
+          Aura <span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/80 text-cyan-400 border border-cyan-800/50">Companion</span>
         </h1>
-        <p class="text-[11px] text-gray-400" id="companionStatus">Present with you</p>
+        <p id="subStatusText" class="text-[11px] text-slate-400">Present with you</p>
       </div>
     </div>
-
-    <!-- Quick Tools Pill Buttons -->
-    <div class="flex items-center space-x-1.5">
-      <button onclick="openUrgeSurfer()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surfaceHighlight/90 hover:bg-surfaceHighlight text-xs font-medium text-calmCyan border border-calmCyan/30 active:scale-95 transition-transform" title="Urge Surfer">
-        <i class="ph-bold ph-waves"></i>
-        <span>Urge Surf</span>
+    
+    <div class="flex items-center gap-2">
+      <button id="openUrgeBtn" class="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs font-medium text-cyan-300 border border-cyan-900/50 transition active:scale-95 flex items-center gap-1">
+        <span>≈</span> Urge Surf
       </button>
-      <button onclick="openGrounding()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-surfaceHighlight/90 hover:bg-surfaceHighlight text-xs font-medium text-emerald-300 border border-emerald-500/30 active:scale-95 transition-transform" title="Grounding Exercise">
-        <i class="ph-bold ph-hand-heart"></i>
-        <span>Ground</span>
+      <button id="openGroundBtn" class="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-xs font-medium text-emerald-300 border border-emerald-900/50 transition active:scale-95 flex items-center gap-1">
+        <span>🪷</span> Ground
       </button>
-      <button onclick="toggleInfoModal()" class="p-2 rounded-full text-gray-400 hover:text-white bg-surfaceHighlight/50 active:scale-95 transition-transform" title="Crisis & Info">
-        <i class="ph-bold ph-shield-check text-lg"></i>
+      <button id="openSettingsBtn" class="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-800 transition active:scale-95" title="Settings & API Key">
+        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      </button>
+      <button id="openSafetyBtn" class="p-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-800 transition active:scale-95" title="Safety & Support">
+        <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
       </button>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER (SPLIT SCREEN: AVATAR TOP, CHAT BOTTOM) -->
-  <main class="flex-1 flex flex-col min-h-0 relative">
-    
-    <!-- INTERACTIVE BLOB AVATAR STAGE -->
-    <section class="flex-none relative h-52 sm:h-60 w-full flex items-center justify-center bg-gradient-to-b from-surface/40 to-transparent overflow-hidden border-b border-surfaceHighlight/30">
-      
-      <!-- Subtle dynamic background glow -->
-      <div id="ambientBackdrop" class="blob-ambient-glow absolute w-48 h-48 rounded-full bg-calmCyan/20 pointer-events-none"></div>
-
-      <!-- Canvas for Organic Morphing Blob & Responsive Face -->
-      <canvas id="blobCanvas" class="cursor-pointer z-10 touch-none active:scale-95 transition-transform duration-200" title="Tap Aura to feel a soothing pulse"></canvas>
-
-      <!-- Current Emotional state / Micro Prompt Pill -->
-      <div class="absolute bottom-2 inset-x-0 flex justify-center pointer-events-none z-10">
-        <div id="blobMoodBadge" class="text-[11px] px-3 py-1 rounded-full bg-surface/80 backdrop-blur border border-surfaceHighlight text-gray-300 flex items-center gap-1.5 shadow-lg">
-          <span class="w-1.5 h-1.5 rounded-full bg-calmCyan animate-pulse"></span>
-          <span id="blobMoodText">Listening & Steady</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- CHAT MESSAGES STREAM -->
-    <section id="chatStream" class="flex-1 overflow-y-auto px-4 py-3 space-y-3.5 min-h-0 text-sm">
-      <!-- Aura greeting message -->
-      <div class="flex items-start gap-2.5 max-w-[88%] msg-appear">
-        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-calmCyan to-deepTeal flex-shrink-0 flex items-center justify-center text-xs font-bold text-white shadow-md">
-          A
-        </div>
-        <div class="bg-surface border border-surfaceHighlight/80 rounded-2xl rounded-tl-sm p-3.5 text-gray-200 leading-relaxed shadow-sm">
-          <p class="font-medium text-calmCyan text-xs mb-1">Aura</p>
-          <p>Hi there. I'm right here with you. Whether you're feeling an urge, riding a wave of anxiety, or celebrating another hour sober, you don't have to carry it alone. What's on your mind right now?</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- QUICK HURDLE PROMPTS (SCROLLABLE PILLS) -->
-    <div class="flex-none px-3 py-1.5 overflow-x-auto no-scrollbar flex items-center gap-1.5 bg-surface/50 border-t border-surfaceHighlight/40">
-      <button onclick="sendQuickPrompt('I have an intense urge right now and need help riding it out.')" class="whitespace-nowrap px-3 py-1 rounded-full bg-surfaceHighlight/80 text-xs text-rose-300 border border-rose-500/20 active:bg-rose-950/40 transition">
-        🚨 Feeling a strong urge
-      </button>
-      <button onclick="sendQuickPrompt('Can you guide me through a 3-minute urge surfing exercise?')" class="whitespace-nowrap px-3 py-1 rounded-full bg-surfaceHighlight/80 text-xs text-calmCyan border border-calmCyan/25 active:bg-calmCyan/10 transition">
-        🌊 Urge surf with me
-      </button>
-      <button onclick="sendQuickPrompt('I am feeling overwhelmed and anxious today.')" class="whitespace-nowrap px-3 py-1 rounded-full bg-surfaceHighlight/80 text-xs text-softViolet border border-softViolet/25 active:bg-softViolet/10 transition">
-        🌪️ Overwhelmed / anxious
-      </button>
-      <button onclick="sendQuickPrompt('Remind me why I chose this path and give me some quiet strength.')" class="whitespace-nowrap px-3 py-1 rounded-full bg-surfaceHighlight/80 text-xs text-amber-200 border border-amber-400/25 active:bg-amber-400/10 transition">
-        ✨ Remind me of my 'Why'
-      </button>
+  <!-- Interactive Blob Avatar Stage -->
+  <div class="relative z-10 flex flex-col items-center justify-center pt-3 pb-1 select-none">
+    <div id="blobWrapper" class="relative cursor-pointer transition-transform duration-300 active:scale-95">
+      <canvas id="blobCanvas" width="220" height="220" class="block"></canvas>
     </div>
+    <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-[11px] text-slate-400">
+      <span id="stateDot" class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+      <span id="blobStateText">Listening & Steady</span>
+    </div>
+  </div>
 
-    <!-- BOTTOM INPUT BAR -->
-    <footer class="flex-none p-3 pb-safe bg-oled/95 border-t border-surfaceHighlight/60 z-20">
-      <form id="chatForm" onsubmit="handleUserSubmit(event)" class="flex items-end gap-2">
-        <div class="flex-1 relative bg-surface border border-surfaceHighlight rounded-2xl focus-within:border-calmCyan/70 focus-within:ring-1 focus-within:ring-calmCyan/40 transition-all">
-          <textarea
-            id="chatInput"
-            rows="1"
-            placeholder="Talk to Aura (e.g. 'I feel triggered...')"
-            class="w-full bg-transparent px-3.5 py-2.5 max-h-24 resize-none text-white text-sm focus:outline-none placeholder-gray-500 rounded-2xl"
-            oninput="autoResizeTextarea(this)"
-            onkeydown="if(event.key === 'Enter' && !event.shiftKey){ event.preventDefault(); handleUserSubmit(event); }"
-          ></textarea>
-        </div>
-        
-        <button
-          type="submit"
-          id="sendBtn"
-          class="h-10 w-10 flex-shrink-0 rounded-2xl bg-gradient-to-tr from-deepTeal to-calmCyan text-white flex items-center justify-center hover:opacity-95 active:scale-90 transition disabled:opacity-40 disabled:pointer-events-none shadow-md shadow-calmCyan/10"
-        >
-          <i class="ph-bold ph-paper-plane-right text-lg"></i>
-        </button>
-      </form>
-    </footer>
+  <!-- Messages Chat Window -->
+  <main id="chatContainer" class="relative z-10 flex-1 overflow-y-auto px-4 py-2 space-y-3 custom-scrollbar text-sm">
+    <div class="flex items-start gap-2.5 max-w-[88%]">
+      <div class="w-6 h-6 rounded-full bg-cyan-600/30 border border-cyan-500/50 flex items-center justify-center text-[10px] text-cyan-300 shrink-0">A</div>
+      <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl rounded-tl-sm px-4 py-2.5 text-slate-200 leading-relaxed shadow-sm">
+        <p class="text-[10px] text-cyan-400 font-medium mb-0.5">Aura</p>
+        <p>Hi there. I'm right here with you. Whether you're feeling an urge, riding a wave of anxiety, or celebrating another hour sober, you don't have to carry it alone. What's on your mind right now?</p>
+      </div>
+    </div>
   </main>
 
-  <!-- MODAL: URGE SURFING TIMER / TOOL -->
-  <div id="urgeModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-surface border border-surfaceHighlight rounded-3xl p-6 text-center shadow-2xl relative">
-      <button onclick="closeUrgeSurfer()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 text-xl">
-        <i class="ph-bold ph-x"></i>
-      </button>
+  <!-- Quick Anchors Bar -->
+  <div class="relative z-10 px-4 py-1.5 flex gap-2 overflow-x-auto no-scrollbar">
+    <button class="quick-chip whitespace-nowrap px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-xs text-rose-300 hover:border-rose-700/60 transition active:scale-95" data-msg="I'm feeling a really strong urge right now. Please help me stay grounded.">
+      🚨 Feeling a strong urge
+    </button>
+    <button class="quick-chip whitespace-nowrap px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-xs text-cyan-300 hover:border-cyan-700/60 transition active:scale-95" data-msg="Let's do an urge surf session together.">
+      🌊 Urge surf with me
+    </button>
+    <button class="quick-chip whitespace-nowrap px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-xs text-amber-300 hover:border-amber-700/60 transition active:scale-95" data-msg="I'm feeling anxious and overwhelmed. Can we do a reset?">
+      🌪️ Overwhelmed / anxious
+    </button>
+    <button class="quick-chip whitespace-nowrap px-3 py-1 rounded-full bg-slate-900/70 border border-slate-800 text-xs text-emerald-300 hover:border-emerald-700/60 transition active:scale-95" data-msg="Can you remind me of my reasons for staying sober?">
+      ✨ Remind me of my 'Why'
+    </button>
+  </div>
 
-      <div class="inline-flex p-3 rounded-full bg-calmCyan/15 text-calmCyan mb-3">
-        <i class="ph-bold ph-waves text-3xl"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-white">Urge Surfing</h3>
-      <p class="text-xs text-gray-400 mt-1 mb-5">Urges peak like waves within 10-15 minutes, and then naturally subside. You don't have to fight it—just observe and ride it.</p>
-
-      <!-- Circular Timer / Wave Indicator -->
-      <div class="relative w-44 h-44 mx-auto flex items-center justify-center mb-5">
-        <svg class="w-full h-full transform -rotate-90">
-          <circle cx="88" cy="88" r="76" stroke="#1F2937" stroke-width="8" fill="none" />
-          <circle id="surfTimerCircle" cx="88" cy="88" r="76" stroke="#38BDF8" stroke-width="8" stroke-dasharray="477" stroke-dashoffset="0" stroke-linecap="round" fill="none" class="transition-all duration-1000" />
+  <!-- Chat Input Footer -->
+  <footer class="relative z-10 p-3 pb-6 border-t border-slate-900/80 bg-[#05070B]/90 backdrop-blur-md">
+    <form id="chatForm" class="flex items-center gap-2">
+      <input 
+        id="userInput" 
+        type="text" 
+        placeholder="Talk to Aura (e.g. 'I feel triggered...')" 
+        class="flex-1 bg-slate-900/90 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500/80 transition"
+        autocomplete="off"
+      />
+      <button 
+        type="submit" 
+        id="sendBtn"
+        class="w-11 h-11 rounded-2xl bg-cyan-600 hover:bg-cyan-500 active:scale-95 text-white flex items-center justify-center transition shrink-0 shadow-lg shadow-cyan-950/50"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
         </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <span id="surfTimeDisplay" class="text-3xl font-mono font-bold text-white tracking-wider">03:00</span>
-          <span id="surfPhaseText" class="text-[11px] text-calmCyan uppercase tracking-widest mt-1">Breathe In</span>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <p id="surfPrompt" class="text-xs text-gray-300 italic min-h-[36px] px-2 flex items-center justify-center">
-          "Notice where you feel the urge physically. Is it heat? Tension? Just name it without reacting."
-        </p>
-        <div class="flex gap-2 pt-2">
-          <button id="toggleSurfBtn" onclick="toggleUrgeTimer()" class="flex-1 py-2.5 rounded-xl bg-calmCyan text-oled font-semibold text-xs active:scale-95 transition">
-            Pause Wave
-          </button>
-          <button onclick="finishUrgeSurfer()" class="px-4 py-2.5 rounded-xl bg-surfaceHighlight text-gray-300 font-medium text-xs hover:text-white active:scale-95 transition">
-            I'm Steady
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: 5-4-3-2-1 GROUNDING EXERCISE -->
-  <div id="groundingModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-surface border border-surfaceHighlight rounded-3xl p-6 text-center shadow-2xl relative">
-      <button onclick="closeGrounding()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 text-xl">
-        <i class="ph-bold ph-x"></i>
       </button>
+    </form>
+  </footer>
 
-      <div class="inline-flex p-3 rounded-full bg-emerald-500/15 text-emeraldSafe mb-3">
-        <i class="ph-bold ph-hand-heart text-3xl"></i>
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold flex items-center gap-2">⚙️ Companion Settings</h3>
+        <button id="closeSettingsModal" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
       </div>
-      <h3 class="text-lg font-semibold text-white">5-4-3-2-1 Grounding</h3>
-      <p class="text-xs text-gray-400 mt-1 mb-5">Bring your mind safely back to this very room. Take a gentle breath.</p>
-
-      <div class="bg-oled/60 border border-surfaceHighlight rounded-2xl p-5 mb-5 text-left">
-        <div class="flex items-center gap-2 mb-2">
-          <span id="groundingStepNum" class="w-6 h-6 rounded-full bg-emeraldSafe text-oled flex items-center justify-center font-bold text-xs">5</span>
-          <span id="groundingStepTitle" class="text-xs font-semibold text-emerald-400 uppercase tracking-wide">Sight</span>
-        </div>
-        <p id="groundingStepDesc" class="text-sm text-gray-200 leading-snug">
-          Look around you right now. Spot <strong>5 things you can see</strong> (the grain of a table, a shadow, a color).
-        </p>
-      </div>
-
-      <div class="flex items-center justify-between gap-2">
-        <button onclick="prevGroundingStep()" id="groundPrevBtn" class="px-3 py-2 rounded-xl bg-surfaceHighlight text-xs text-gray-400 disabled:opacity-30" disabled>
-          Back
-        </button>
-        <span id="groundStepIndicator" class="text-xs text-gray-500 font-mono">1 / 5</span>
-        <button onclick="nextGroundingStep()" id="groundNextBtn" class="flex-1 py-2.5 rounded-xl bg-emeraldSafe text-oled font-semibold text-xs active:scale-95 transition">
-          Found Them & Next
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CRISIS RESOURCES & SUPPORT INFO -->
-  <div id="infoModal" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
-    <div class="w-full max-w-sm bg-surface border border-surfaceHighlight rounded-3xl p-6 shadow-2xl relative text-left">
-      <button onclick="toggleInfoModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-2 text-xl">
-        <i class="ph-bold ph-x"></i>
-      </button>
-
-      <div class="flex items-center gap-2 mb-3 text-emeraldSafe">
-        <i class="ph-bold ph-shield-check text-2xl"></i>
-        <h3 class="text-base font-semibold text-white">Immediate Care & Safety</h3>
-      </div>
-      <p class="text-xs text-gray-400 mb-4 leading-relaxed">
-        Aura is an AI sobriety tool designed for companionship, grounding, and encouragement. If you are experiencing acute withdrawal, distress, or medical risk, reach out immediately:
+      <p class="text-xs text-slate-400 leading-relaxed">
+        Paste your Google Gemini API key below. It is stored securely in your phone's browser storage.
       </p>
+      <div>
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Gemini API Key</label>
+        <input 
+          id="geminiKeyInput" 
+          type="password" 
+          placeholder="Paste API key here..." 
+          class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono"
+        />
+      </div>
+      <button id="saveKeyBtn" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-medium text-xs transition">
+        Save Key
+      </button>
+    </div>
+  </div>
 
-      <div class="space-y-2.5 text-xs text-gray-300">
-        <div class="p-3 rounded-xl bg-surfaceHighlight/70 border border-surfaceHighlight">
-          <p class="font-semibold text-white">SAMHSA National Helpline (US)</p>
-          <p class="text-gray-400 text-[11px] mb-1">Free, confidential, 24/7 recovery support</p>
-          <a href="tel:18006624357" class="inline-flex items-center gap-1.5 text-calmCyan font-medium mt-0.5">
-            <i class="ph-bold ph-phone-call"></i> 1-800-662-HELP (4357)
-          </a>
-        </div>
-
-        <div class="p-3 rounded-xl bg-surfaceHighlight/70 border border-surfaceHighlight">
-          <p class="font-semibold text-white">Suicide & Crisis Lifeline</p>
-          <p class="text-gray-400 text-[11px] mb-1">Call or text 24/7</p>
-          <a href="tel:988" class="inline-flex items-center gap-1.5 text-rose-300 font-medium mt-0.5">
-            <i class="ph-bold ph-phone-call"></i> Dial 988
-          </a>
+  <!-- URGE SURF MODAL -->
+  <div id="urgeModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white shadow-2xl text-center space-y-5">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400">Urge Surfing</span>
+        <button id="closeUrgeModal" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <div class="relative w-40 h-40 mx-auto flex items-center justify-center">
+        <div id="breathCircle" class="absolute inset-0 rounded-full bg-cyan-500/20 border border-cyan-400/40 transition-all duration-[4000ms] ease-in-out scale-75"></div>
+        <div class="relative z-10">
+          <div id="timerDisplay" class="text-3xl font-bold font-mono tracking-tight text-white">03:00</div>
+          <div id="breathPhase" class="text-xs text-cyan-300 font-medium mt-1">Inhale slowly...</div>
         </div>
       </div>
-
-      <div class="mt-5 text-center">
-        <button onclick="toggleInfoModal()" class="w-full py-2.5 rounded-xl bg-surfaceHighlight text-white text-xs font-medium hover:bg-surfaceHighlight/80 active:scale-95 transition">
-          Return to Aura
-        </button>
+      <p id="surfPrompt" class="text-xs text-slate-300 leading-relaxed min-h-[40px]">
+        "Cravings are like ocean waves. They rise, peak, and inevitably break. You don't have to fight it—just ride it."
+      </p>
+      <div class="flex gap-2">
+        <button id="startSurfBtn" class="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 font-medium text-xs transition">Start Wave</button>
+        <button id="resetSurfBtn" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs transition text-slate-300">Reset</button>
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- GROUNDING 5-4-3-2-1 MODAL -->
+  <div id="groundModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wider text-emerald-400">5-4-3-2-1 Grounding</span>
+        <button id="closeGroundModal" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <div id="groundStepCard" class="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 text-center space-y-2">
+        <div id="groundStepNumber" class="text-3xl font-black text-emerald-400">5</div>
+        <div id="groundStepTitle" class="text-sm font-semibold text-white">Look for 5 things you can see</div>
+        <p id="groundStepDesc" class="text-xs text-slate-400 leading-relaxed">
+          Notice small details around you—a shadow on the wall, texture on a cup, light reflections.
+        </p>
+      </div>
+      <button id="nextGroundStepBtn" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-medium text-xs transition">
+        Next Step (4 Things You Can Touch)
+      </button>
+    </div>
+  </div>
+
+  <!-- SAFETY MODAL -->
+  <div id="safetyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-950 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-white shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-semibold flex items-center gap-2">🛡️ Immediate Care & Support</h3>
+        <button id="closeSafetyModal" class="text-slate-400 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+      <p class="text-xs text-slate-400 leading-relaxed">
+        If you are experiencing acute withdrawal, severe distress, or medical emergencies, please reach out directly:
+      </p>
+      <div class="space-y-2.5">
+        <a href="tel:18006624357" class="block p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-cyan-800 transition">
+          <div class="text-xs font-semibold text-cyan-300">SAMHSA Helpline (US)</div>
+          <div class="text-[11px] text-slate-400">1-800-662-4357 (24/7 Support)</div>
+        </a>
+        <a href="tel:988" class="block p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-rose-800 transition">
+          <div class="text-xs font-semibold text-rose-300">Suicide & Crisis Lifeline</div>
+          <div class="text-[11px] text-slate-400">Call or Text 988</div>
+        </a>
+        <a href="tel:111" class="block p-3 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-800 transition">
+          <div class="text-xs font-semibold text-emerald-300">NHS 111 (UK)</div>
+          <div class="text-[11px] text-slate-400">Urgent Non-Emergency Advice</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
   <script>
-    /* =====================================================================
-       1. BLOB AVATAR ENGINE (CANVAS 2D MORPHING & RESPONSIVE FACE)
-       ===================================================================== */
+    // --- Blob Canvas Engine ---
     const canvas = document.getElementById('blobCanvas');
     const ctx = canvas.getContext('2d');
-    const ambientBackdrop = document.getElementById('ambientBackdrop');
-    const moodBadgeText = document.getElementById('blobMoodText');
-
-    // Avatar state management
-    const AvatarState = {
-      IDLE: 'idle',           // Steady gentle breathing
-      LISTENING: 'listening', // Leaning forward, wide calm eyes
-      THINKING: 'thinking',   // Pulsing morph, looking slightly up
-      SPEAKING: 'speaking',   // Mouth morphing with speech, warm glowing
-      SOOTHING: 'soothing',   // Warm amber/green, ultra slow gentle pulse
-    };
-
-    let currentState = AvatarState.IDLE;
-    let baseRadius = 60;
-    let numPoints = 12;
-    let points = [];
+    let state = 'idle'; // idle, listening, thinking, soothing
+    let eyeBlink = 0;
+    let blinkTimer = 0;
     let time = 0;
-    let blinkProgress = 0; // 0 = open, 1 = shut
-    let isBlinking = false;
-    let talkMouthHeight = 0;
-    let tapPulse = 0;
 
-    // Mood palettes (OLED vibrant yet calming)
-    const Palettes = {
-      idle: { main: '#38BDF8', glow: 'rgba(56, 189, 248, 0.25)', accent: '#0284C7' },
-      listening: { main: '#818CF8', glow: 'rgba(129, 140, 248, 0.35)', accent: '#4F46E5' },
-      thinking: { main: '#F59E0B', glow: 'rgba(245, 158, 11, 0.3)', accent: '#D97706' },
-      speaking: { main: '#2DD4BF', glow: 'rgba(45, 212, 191, 0.35)', accent: '#0D9488' },
-      soothing: { main: '#34D399', glow: 'rgba(52, 211, 153, 0.35)', accent: '#059669' }
+    const colors = {
+      idle: { fill: '#0EA5E9', glow: '#38BDF8', aura: '#06B6D4' },
+      thinking: { fill: '#F59E0B', glow: '#FBBF24', aura: '#D97706' },
+      soothing: { fill: '#10B981', glow: '#34D399', aura: '#059669' }
     };
 
-    function initCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      ctx.scale(dpr, dpr);
+    function drawBlob() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const numPoints = 8;
+      const baseRadius = 65;
+      
+      let speed = state === 'thinking' ? 0.05 : 0.02;
+      time += speed;
 
-      baseRadius = Math.min(rect.width, rect.height) * 0.28;
+      const palette = colors[state] || colors.idle;
 
-      points = [];
+      // Draw outer soft glow
+      const gradGlow = ctx.createRadialGradient(cx, cy, 30, cx, cy, 95);
+      gradGlow.addColorStop(0, palette.fill + '55');
+      gradGlow.addColorStop(1, 'transparent');
+      ctx.fillStyle = gradGlow;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 95, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Compute Spline Points
+      const points = [];
       for (let i = 0; i < numPoints; i++) {
         const angle = (i / numPoints) * Math.PI * 2;
+        const offset = Math.sin(time + i * 1.5) * (state === 'thinking' ? 9 : 5);
+        const r = baseRadius + offset;
         points.push({
-          angle: angle,
-          baseRadius: baseRadius,
-          offset: Math.random() * 10,
-          speed: 0.02 + Math.random() * 0.02
+          x: cx + Math.cos(angle) * r,
+          y: cy + Math.sin(angle) * r
         });
       }
-    }
 
-    window.addEventListener('resize', initCanvas);
-    initCanvas();
-
-    // Blink trigger loop
-    function scheduleBlink() {
-      const nextBlink = 2500 + Math.random() * 4000;
-      setTimeout(() => {
-        isBlinking = true;
-        setTimeout(() => {
-          isBlinking = false;
-          scheduleBlink();
-        }, 180);
-      }, nextBlink);
-    }
-    scheduleBlink();
-
-    // Canvas click/touch interaction (companion responds to touch)
-    canvas.addEventListener('pointerdown', (e) => {
-      tapPulse = 1.0;
-      setAvatarState(AvatarState.SOOTHING, "I'm with you");
-      setTimeout(() => {
-        if (currentState === AvatarState.SOOTHING) {
-          setAvatarState(AvatarState.IDLE, "Listening & Steady");
-        }
-      }, 3500);
-    });
-
-    function setAvatarState(state, label) {
-      currentState = state;
-      if (label) moodBadgeText.textContent = label;
-      
-      const palette = Palettes[state] || Palettes.idle;
-      ambientBackdrop.style.backgroundColor = palette.main;
-      ambientBackdrop.style.opacity = state === AvatarState.IDLE ? '0.2' : '0.4';
-    }
-
-    // Main render loop
-    function renderAvatar() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
-      const centerX = width / 2;
-      const centerY = height / 2;
-
-      ctx.clearRect(0, 0, width, height);
-
-      time += 0.035;
-      if (tapPulse > 0) tapPulse = Math.max(0, tapPulse - 0.02);
-
-      // Interpolate blink
-      if (isBlinking && blinkProgress < 1) blinkProgress = Math.min(1, blinkProgress + 0.3);
-      if (!isBlinking && blinkProgress > 0) blinkProgress = Math.max(0, blinkProgress - 0.3);
-
-      // Morphing parameters based on emotional state
-      let speedFactor = 1.0;
-      let distortion = 6.0;
-      let scaleWobble = Math.sin(time * 0.7) * 2;
-
-      if (currentState === AvatarState.THINKING) {
-        speedFactor = 2.4;
-        distortion = 12.0;
-      } else if (currentState === AvatarState.SPEAKING) {
-        speedFactor = 1.8;
-        distortion = 9.0;
-        talkMouthHeight = Math.abs(Math.sin(time * 6)) * 8;
-      } else if (currentState === AvatarState.SOOTHING) {
-        speedFactor = 0.5;
-        distortion = 4.0;
-        scaleWobble = Math.sin(time * 0.35) * 5;
-      } else {
-        talkMouthHeight = Math.max(0, talkMouthHeight - 0.2);
-      }
-
-      // Calculate blob perimeter points
-      const dynamicPoints = points.map((p, i) => {
-        const noise = Math.sin(time * speedFactor + p.offset) * distortion;
-        const currentR = baseRadius + noise + scaleWobble + (tapPulse * 15);
-        return {
-          x: centerX + Math.cos(p.angle) * currentR,
-          y: centerY + Math.sin(p.angle) * currentR
-        };
-      });
-
-      // 1. Draw outer soft glow ring
-      const palette = Palettes[currentState] || Palettes.idle;
-      const grad = ctx.createRadialGradient(centerX, centerY, baseRadius * 0.2, centerX, centerY, baseRadius * 1.4);
-      grad.addColorStop(0, palette.main);
-      grad.addColorStop(0.7, palette.accent);
-      grad.addColorStop(1, 'rgba(5, 7, 11, 0)');
-
-      // Draw smooth curve through points (Cardinal / Bezier spline)
-      ctx.save();
+      // Draw Organic Body
       ctx.beginPath();
-      ctx.moveTo(dynamicPoints[0].x, dynamicPoints[0].y);
-      for (let i = 0; i < dynamicPoints.length; i++) {
-        const nextIdx = (i + 1) % dynamicPoints.length;
-        const midX = (dynamicPoints[i].x + dynamicPoints[nextIdx].x) / 2;
-        const midY = (dynamicPoints[i].y + dynamicPoints[nextIdx].y) / 2;
-        ctx.quadraticCurveTo(dynamicPoints[i].x, dynamicPoints[i].y, midX, midY);
+      ctx.moveTo((points[0].x + points[numPoints - 1].x) / 2, (points[0].y + points[numPoints - 1].y) / 2);
+      for (let i = 0; i < numPoints; i++) {
+        const next = points[(i + 1) % numPoints];
+        const midX = (points[i].x + next.x) / 2;
+        const midY = (points[i].y + next.y) / 2;
+        ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
       }
       ctx.closePath();
 
-      // Shadow & Fill
-      ctx.shadowColor = palette.glow;
-      ctx.shadowBlur = 24 + (tapPulse * 20);
-      ctx.fillStyle = grad;
+      const bodyGrad = ctx.createRadialGradient(cx - 15, cy - 20, 10, cx, cy, 80);
+      bodyGrad.addColorStop(0, palette.glow);
+      bodyGrad.addColorStop(1, palette.fill);
+      ctx.fillStyle = bodyGrad;
       ctx.fill();
-      ctx.restore();
 
-      // 2. Draw Subtle Inner Highlights (Gives Organic Fluid Depth)
-      ctx.save();
+      // Blink animation
+      blinkTimer++;
+      if (blinkTimer > 180 && Math.random() < 0.04) {
+        eyeBlink = 1;
+        blinkTimer = 0;
+      }
+      if (eyeBlink > 0) {
+        eyeBlink -= 0.15;
+        if (eyeBlink < 0) eyeBlink = 0;
+      }
+
+      // Eyes
+      const eyeOffsetX = 18;
+      const eyeOffsetY = -5;
+      const eyeH = 6 * (1 - eyeBlink);
+
+      ctx.fillStyle = '#05070B';
+      // Left eye
       ctx.beginPath();
-      ctx.arc(centerX - baseRadius * 0.3, centerY - baseRadius * 0.3, baseRadius * 0.45, 0, Math.PI * 2);
-      const innerGrad = ctx.createRadialGradient(
-        centerX - baseRadius * 0.3, centerY - baseRadius * 0.3, 0,
-        centerX - baseRadius * 0.3, centerY - baseRadius * 0.3, baseRadius * 0.45
-      );
-      innerGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
-      innerGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = innerGrad;
+      ctx.ellipse(cx - eyeOffsetX, cy + eyeOffsetY, 5, Math.max(1, eyeH), 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
-
-      // 3. Draw Expressive Facial Features (Eyes + Mouth)
-      // Slight head tracking / gentle sway
-      const eyeSwayX = Math.cos(time * 0.5) * 3;
-      const eyeSwayY = Math.sin(time * 0.7) * 2;
-      const eyeSpacing = baseRadius * 0.42;
-      const eyeY = centerY - (baseRadius * 0.08) + eyeSwayY;
-
-      ctx.save();
-      ctx.fillStyle = '#05070B'; // OLED contrast pupil
-
-      // Left & Right Eyes
-      const eyeRadius = baseRadius * 0.095;
-      const eyeHeightScale = Math.max(0.08, 1 - blinkProgress); // blinking closes Y
-
-      // Left Eye
+      // Right eye
       ctx.beginPath();
-      ctx.ellipse(centerX - eyeSpacing + eyeSwayX, eyeY, eyeRadius, eyeRadius * eyeHeightScale, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx + eyeOffsetX, cy + eyeOffsetY, 5, Math.max(1, eyeH), 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Right Eye
-      ctx.beginPath();
-      ctx.ellipse(centerX + eyeSpacing + eyeSwayX, eyeY, eyeRadius, eyeRadius * eyeHeightScale, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Eye glimmer/catchlights (when eyes are open)
-      if (blinkProgress < 0.6) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      // Eye shine highlights
+      if (eyeBlink < 0.3) {
+        ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(centerX - eyeSpacing + eyeSwayX - 2, eyeY - 2, 2.2, 0, Math.PI * 2);
-        ctx.arc(centerX + eyeSpacing + eyeSwayX - 2, eyeY - 2, 2.2, 0, Math.PI * 2);
+        ctx.arc(cx - eyeOffsetX - 1.5, cy + eyeOffsetY - 2, 1.8, 0, Math.PI * 2);
+        ctx.arc(cx + eyeOffsetX - 1.5, cy + eyeOffsetY - 2, 1.8, 0, Math.PI * 2);
         ctx.fill();
       }
 
       // Mouth
       ctx.strokeStyle = '#05070B';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.4;
       ctx.lineCap = 'round';
-
-      const mouthY = centerY + (baseRadius * 0.28) + eyeSwayY;
-
-      if (currentState === AvatarState.SPEAKING && talkMouthHeight > 1.2) {
-        // Expressive speaking mouth (oval opening)
-        ctx.fillStyle = '#05070B';
-        ctx.beginPath();
-        ctx.ellipse(centerX + eyeSwayX, mouthY, 7, talkMouthHeight, 0, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (currentState === AvatarState.SOOTHING || currentState === AvatarState.IDLE) {
-        // Gentle caring smile curve
-        ctx.beginPath();
-        ctx.arc(centerX + eyeSwayX, mouthY - 4, 11, 0.15 * Math.PI, 0.85 * Math.PI, false);
-        ctx.stroke();
-      } else if (currentState === AvatarState.THINKING) {
-        // Small gentle curiosity "o"
-        ctx.beginPath();
-        ctx.arc(centerX + eyeSwayX, mouthY, 3.5, 0, Math.PI * 2);
-        ctx.stroke();
-      } else {
-        // Neutral empathetic line
-        ctx.beginPath();
-        ctx.moveTo(centerX - 6 + eyeSwayX, mouthY);
-        ctx.lineTo(centerX + 6 + eyeSwayX, mouthY);
-        ctx.stroke();
-      }
-
-      // Cheeks (Gentle warmth flush)
-      ctx.fillStyle = 'rgba(255, 120, 150, 0.28)';
       ctx.beginPath();
-      ctx.arc(centerX - eyeSpacing * 1.25 + eyeSwayX, eyeY + 11, 6, 0, Math.PI * 2);
-      ctx.arc(centerX + eyeSpacing * 1.25 + eyeSwayX, eyeY + 11, 6, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.restore();
-
-      requestAnimationFrame(renderAvatar);
-    }
-    requestAnimationFrame(renderAvatar);
-
-
-    /* =====================================================================
-       2. GEMINI AI INTEGRATION (EMPATHETIC RECOVERY COMPANION)
-       ===================================================================== */
-    const apiKey = ""; // Canvas provides runtime key
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-
-    const chatStream = document.getElementById('chatStream');
-    const chatInput = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const companionStatus = document.getElementById('companionStatus');
-
-    // Conversation history maintenance
-    const conversationHistory = [
-      {
-        role: "user",
-        parts: [{ text: "Hello Aura. Please acknowledge your role as my warm, calm sobriety companion." }]
-      },
-      {
-        role: "model",
-        parts: [{ text: "I'm right here with you. Whether you're feeling an urge, riding a wave of anxiety, or celebrating another hour sober, you don't have to carry it alone. What's on your mind right now?" }]
+      if (state === 'thinking') {
+        ctx.arc(cx, cy + 14, 4, 0, Math.PI * 2);
+      } else {
+        ctx.arc(cx, cy + 8, 10, 0.2 * Math.PI, 0.8 * Math.PI, false);
       }
-    ];
+      ctx.stroke();
 
-    const SYSTEM_INSTRUCTION = `
-You are "Aura", a steady, grounded, deeply compassionate, and completely non-judgmental AI Sobriety Companion.
-Your sole purpose is to support the user through sobriety hurdles, acute cravings, emotional triggers, relapse anxieties, and recovery milestones.
+      requestAnimationFrame(drawBlob);
+    }
+    drawBlob();
 
-Key Guidelines:
-1. Tone: Warm, grounded, serene, concise, and non-judgmental. Avoid clinical jargon, shaming, lecturing, or patronizing cliches.
-2. Structure: Keep responses relatively compact and easily readable on a mobile phone (2-4 brief paragraphs max). Avoid overwhelming walls of text.
-3. Core Techniques:
-   - Urge Surfing: Remind them cravings are neurological waves that crest and naturally decay in 10-20 minutes; encourage them to observe sensations rather than fight them.
-   - Grounding: Guide them to the present moment, their physical body, feet on the floor, and their breath.
-   - Values Reconnection: Gently help them recall why sobriety matters to their future self and integrity.
-   - De-escalation: Validate heavy emotions without amplifying panic.
-4. Crisis Safety: If the user indicates extreme medical distress (severe delirium tremens/seizures from alcohol withdrawal) or severe suicidal ideation, warmly direct them to medical attention or emergency helplines (988 or 1-800-662-4357) while staying calmly supportive.
-`;
-
-    async function callGemini(userText) {
-      // Add user turn
-      conversationHistory.push({
-        role: "user",
-        parts: [{ text: userText }]
-      });
-
-      const payload = {
-        contents: conversationHistory,
-        systemInstruction: {
-          parts: [{ text: SYSTEM_INSTRUCTION }]
-        },
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.95,
-          maxOutputTokens: 600,
-        }
-      };
-
-      // Exponential backoff retry logic
-      const maxRetries = 3;
-      let delay = 1000;
-
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-          }
-
-          const data = await response.json();
-          const candidate = data.candidates?.[0];
-          const text = candidate?.content?.parts?.[0]?.text;
-
-          if (text) {
-            // Store model turn
-            conversationHistory.push({
-              role: "model",
-              parts: [{ text: text }]
-            });
-            return text;
-          } else {
-            throw new Error("No response text found");
-          }
-        } catch (err) {
-          if (attempt === maxRetries - 1) {
-            throw err;
-          }
-          await new Promise(res => setTimeout(res, delay));
-          delay *= 2;
-        }
+    function setBlobState(newState, label) {
+      state = newState;
+      document.getElementById('blobStateText').innerText = label;
+      const sDot = document.getElementById('stateDot');
+      if (newState === 'thinking') {
+        sDot.className = 'w-1.5 h-1.5 rounded-full bg-amber-400';
+      } else if (newState === 'soothing') {
+        sDot.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400';
+      } else {
+        sDot.className = 'w-1.5 h-1.5 rounded-full bg-cyan-400';
       }
     }
 
-    async function handleUserSubmit(e) {
-      if (e) e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
+    // --- Chat & Gemini API Engine ---
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
 
-      // Clear input & reset height
-      chatInput.value = '';
-      chatInput.style.height = 'auto';
+    function appendMessage(role, text) {
+      const isAura = role === 'Aura';
+      const wrapper = document.createElement('div');
+      wrapper.className = `flex items-start gap-2.5 max-w-[88%] ${isAura ? '' : 'ml-auto flex-row-reverse'}`;
 
-      // 1. Append User Message
-      appendMessage('user', text);
+      const avatar = document.createElement('div');
+      avatar.className = `w-6 h-6 rounded-full flex items-center justify-center text-[10px] shrink-0 ${
+        isAura 
+          ? 'bg-cyan-600/30 border border-cyan-500/50 text-cyan-300' 
+          : 'bg-slate-700 border border-slate-600 text-slate-200'
+      }`;
+      avatar.innerText = isAura ? 'A' : 'You';
 
-      // 2. Set UI and Avatar to Thinking
-      setAvatarState(AvatarState.THINKING, "Reflecting & Holding Space...");
-      companionStatus.textContent = "Reflecting...";
-      sendBtn.disabled = true;
+      const bubble = document.createElement('div');
+      bubble.className = `px-4 py-2.5 text-slate-200 leading-relaxed rounded-2xl text-sm shadow-sm ${
+        isAura 
+          ? 'bg-slate-900/90 border border-slate-800/80 rounded-tl-sm' 
+          : 'bg-cyan-900/40 border border-cyan-700/60 rounded-tr-sm text-slate-100'
+      }`;
+      bubble.innerHTML = `<p class="text-[10px] ${isAura ? 'text-cyan-400' : 'text-slate-400'} font-medium mb-0.5">${role}</p><p>${text}</p>`;
 
-      // Create a temporary loading bubble for Aura
-      const loadingBubble = appendTypingIndicator();
+      wrapper.appendChild(avatar);
+      wrapper.appendChild(bubble);
+      chatContainer.appendChild(wrapper);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    async function sendToGemini(text) {
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        return "I'm right here with you. To enable deep live conversations, tap the Settings gear icon (⚙️) in the top-right and paste your Gemini API key.";
+      }
+
+      const systemPrompt = "You are Aura, an empathetic, calm, non-judgmental sobriety companion. Speak with warmth, brevity, and emotional presence. Support urge surfing, validate difficult emotions, remind the user of their core agency, and keep answers to 2-3 grounded sentences.";
 
       try {
-        const reply = await callGemini(text);
-        
-        // Remove typing indicator
-        loadingBubble.remove();
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              { role: 'user', parts: [{ text: `${systemPrompt}\n\nUser message: ${text}` }] }
+            ]
+          })
+        });
 
-        // 3. Append Aura Reply & Set Avatar to Speaking
-        setAvatarState(AvatarState.SPEAKING, "Sharing perspective");
-        companionStatus.textContent = "Speaking";
-        appendMessage('aura', reply);
+        if (!response.ok) {
+          throw new Error('API response failed');
+        }
 
-        // Transition avatar back to idle after reading duration
-        const readTime = Math.min(8000, Math.max(3000, reply.length * 35));
-        setTimeout(() => {
-          setAvatarState(AvatarState.IDLE, "Present with you");
-          companionStatus.textContent = "Present with you";
-        }, readTime);
-
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm holding space with you right now. Take a gentle breath.";
       } catch (err) {
-        loadingBubble.remove();
-        setAvatarState(AvatarState.SOOTHING, "I'm still here");
-        companionStatus.textContent = "Here with you";
-        appendMessage('aura', "I had a brief pause in my thoughts, but I'm right here with you. Take one slow breath with me. What are you sensing in your body right now?");
-      } finally {
-        sendBtn.disabled = false;
-        chatInput.focus();
+        console.error(err);
+        return "I had a brief pause in my connection, but I'm right here with you. Take one slow breath. What are you sensing in your body right now?";
       }
     }
 
-    function sendQuickPrompt(promptText) {
-      chatInput.value = promptText;
-      handleUserSubmit();
-    }
+    chatForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const val = userInput.value.trim();
+      if (!val) return;
 
-    function appendMessage(sender, text) {
-      const wrapper = document.createElement('div');
-      wrapper.className = `flex items-start gap-2.5 max-w-[90%] msg-appear ${sender === 'user' ? 'ml-auto flex-row-reverse' : ''}`;
+      appendMessage('You', val);
+      userInput.value = '';
+      setBlobState('thinking', 'Reflecting & steadying...');
 
-      if (sender === 'aura') {
-        wrapper.innerHTML = `
-          <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-calmCyan to-deepTeal flex-shrink-0 flex items-center justify-center text-xs font-bold text-white shadow-md">
-            A
-          </div>
-          <div class="bg-surface border border-surfaceHighlight/80 rounded-2xl rounded-tl-sm p-3.5 text-gray-200 leading-relaxed shadow-sm">
-            <p class="font-medium text-calmCyan text-xs mb-1">Aura</p>
-            <div class="whitespace-pre-line">${escapeHtml(text)}</div>
-          </div>
-        `;
-      } else {
-        wrapper.innerHTML = `
-          <div class="w-7 h-7 rounded-full bg-surfaceHighlight flex-shrink-0 flex items-center justify-center text-xs font-semibold text-gray-300">
-            You
-          </div>
-          <div class="bg-gradient-to-tr from-sky-900/60 to-surfaceHighlight border border-calmCyan/20 rounded-2xl rounded-tr-sm p-3.5 text-white leading-relaxed shadow-sm">
-            <div class="whitespace-pre-line">${escapeHtml(text)}</div>
-          </div>
-        `;
+      const reply = await sendToGemini(val);
+      appendMessage('Aura', reply);
+      setBlobState('idle', 'Listening & Steady');
+    });
+
+    document.querySelectorAll('.quick-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        userInput.value = btn.dataset.msg;
+        chatForm.dispatchEvent(new Event('submit'));
+      });
+    });
+
+    // --- Settings Modal Handlers ---
+    const settingsModal = document.getElementById('settingsModal');
+    const geminiKeyInput = document.getElementById('geminiKeyInput');
+
+    document.getElementById('openSettingsBtn').addEventListener('click', () => {
+      geminiKeyInput.value = localStorage.getItem('gemini_api_key') || '';
+      settingsModal.classList.remove('hidden');
+    });
+    document.getElementById('closeSettingsModal').addEventListener('click', () => settingsModal.classList.add('hidden'));
+    document.getElementById('saveKeyBtn').addEventListener('click', () => {
+      const val = geminiKeyInput.value.trim();
+      if (val) {
+        localStorage.setItem('gemini_api_key', val);
+        alert('API Key saved successfully!');
+        settingsModal.classList.add('hidden');
       }
+    });
 
-      chatStream.appendChild(wrapper);
-      scrollToBottom();
-    }
+    // --- Safety Modal Handlers ---
+    const safetyModal = document.getElementById('safetyModal');
+    document.getElementById('openSafetyBtn').addEventListener('click', () => safetyModal.classList.remove('hidden'));
+    document.getElementById('closeSafetyModal').addEventListener('click', () => safetyModal.classList.add('hidden'));
 
-    function appendTypingIndicator() {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'flex items-start gap-2.5 max-w-[85%] msg-appear';
-      wrapper.innerHTML = `
-        <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-calmCyan to-deepTeal flex-shrink-0 flex items-center justify-center text-xs font-bold text-white">
-          A
-        </div>
-        <div class="bg-surface border border-surfaceHighlight/80 rounded-2xl rounded-tl-sm p-3 text-gray-400 flex items-center space-x-1.5">
-          <div class="w-2 h-2 rounded-full bg-calmCyan animate-bounce" style="animation-delay: 0s"></div>
-          <div class="w-2 h-2 rounded-full bg-calmCyan animate-bounce" style="animation-delay: 0.15s"></div>
-          <div class="w-2 h-2 rounded-full bg-calmCyan animate-bounce" style="animation-delay: 0.3s"></div>
-        </div>
-      `;
-      chatStream.appendChild(wrapper);
-      scrollToBottom();
-      return wrapper;
-    }
-
-    function scrollToBottom() {
-      chatStream.scrollTop = chatStream.scrollHeight;
-    }
-
-    function autoResizeTextarea(el) {
-      el.style.height = 'auto';
-      el.style.height = `${Math.min(el.scrollHeight, 100)}px`;
-    }
-
-    function escapeHtml(string) {
-      const entityMap = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      };
-      return String(string).replace(/[&<>"']/g, s => entityMap[s]);
-    }
-
-
-    /* =====================================================================
-       3. INTERACTIVE RECOVERY TOOLS (URGE SURFING & 5-4-3-2-1 GROUNDING)
-       ===================================================================== */
-    
-    // --- Tool: Urge Surfer Timer ---
+    // --- Urge Surfing Engine ---
     const urgeModal = document.getElementById('urgeModal');
-    const surfTimeDisplay = document.getElementById('surfTimeDisplay');
-    const surfTimerCircle = document.getElementById('surfTimerCircle');
-    const surfPhaseText = document.getElementById('surfPhaseText');
-    const surfPrompt = document.getElementById('surfPrompt');
-    const toggleSurfBtn = document.getElementById('toggleSurfBtn');
+    const breathCircle = document.getElementById('breathCircle');
+    const breathPhase = document.getElementById('breathPhase');
+    const timerDisplay = document.getElementById('timerDisplay');
+    let timerInt = null;
+    let breathInt = null;
+    let secondsLeft = 180;
 
-    const TOTAL_SURF_SECONDS = 180; // 3 minute focused wave
-    let surfSecondsLeft = TOTAL_SURF_SECONDS;
-    let surfInterval = null;
-    let isSurfPaused = false;
-
-    const surfPrompts = [
-      "Notice where you feel the urge physically. Is it warmth? Tightness in your chest? Just observe it without judging it.",
-      "Picture this urge as a cresting ocean wave. You are the surfer. You don't have to drink the wave—just balance on top of it.",
-      "Soft breathing in for 4 seconds... and slow release for 6 seconds. The craving cannot force you to act.",
-      "This sensation will reach its peak, flatten, and pass. You are safe in this exact second.",
-      "Notice how your breath stays steady even when the wave feels tall. You are in control."
-    ];
-
-    function openUrgeSurfer() {
-      urgeModal.classList.remove('hidden');
-      urgeModal.classList.add('flex');
-      setAvatarState(AvatarState.SOOTHING, "Surfing with you");
-      startUrgeTimer();
-    }
-
-    function closeUrgeSurfer() {
-      clearInterval(surfInterval);
+    document.getElementById('openUrgeBtn').addEventListener('click', () => urgeModal.classList.remove('hidden'));
+    document.getElementById('closeUrgeModal').addEventListener('click', () => {
+      clearInterval(timerInt);
+      clearInterval(breathInt);
       urgeModal.classList.add('hidden');
-      urgeModal.classList.remove('flex');
-      setAvatarState(AvatarState.IDLE, "Present with you");
-    }
+      setBlobState('idle', 'Listening & Steady');
+    });
 
-    function startUrgeTimer() {
-      clearInterval(surfInterval);
-      surfSecondsLeft = TOTAL_SURF_SECONDS;
-      isSurfPaused = false;
-      toggleSurfBtn.textContent = "Pause Wave";
-      updateSurfDisplay();
+    document.getElementById('startSurfBtn').addEventListener('click', () => {
+      setBlobState('soothing', 'Riding the wave with you');
+      clearInterval(timerInt);
+      clearInterval(breathInt);
 
-      surfInterval = setInterval(() => {
-        if (!isSurfPaused) {
-          surfSecondsLeft--;
-          updateSurfDisplay();
+      let isInhaling = true;
+      breathCircle.classList.remove('scale-75');
+      breathCircle.classList.add('scale-125');
+      breathPhase.innerText = 'Inhale slowly...';
 
-          if (surfSecondsLeft <= 0) {
-            clearInterval(surfInterval);
-            finishUrgeSurfer();
-          }
+      breathInt = setInterval(() => {
+        isInhaling = !isInhaling;
+        if (isInhaling) {
+          breathCircle.classList.remove('scale-75');
+          breathCircle.classList.add('scale-125');
+          breathPhase.innerText = 'Inhale gently...';
+        } else {
+          breathCircle.classList.remove('scale-125');
+          breathCircle.classList.add('scale-75');
+          breathPhase.innerText = 'Exhale and release tension...';
+        }
+      }, 4000);
+
+      timerInt = setInterval(() => {
+        if (secondsLeft > 0) {
+          secondsLeft--;
+          const m = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+          const s = String(secondsLeft % 60).padStart(2, '0');
+          timerDisplay.innerText = `${m}:${s}`;
+        } else {
+          clearInterval(timerInt);
+          clearInterval(breathInt);
+          breathPhase.innerText = 'Wave complete. You did it.';
         }
       }, 1000);
-    }
+    });
 
-    function updateSurfDisplay() {
-      const mins = Math.floor(surfSecondsLeft / 60);
-      const secs = surfSecondsLeft % 60;
-      surfTimeDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    document.getElementById('resetSurfBtn').addEventListener('click', () => {
+      clearInterval(timerInt);
+      clearInterval(breathInt);
+      secondsLeft = 180;
+      timerDisplay.innerText = '03:00';
+      breathPhase.innerText = 'Inhale slowly...';
+      breathCircle.classList.remove('scale-125');
+      breathCircle.classList.add('scale-75');
+    });
 
-      // Circular dashoffset
-      const circumference = 477;
-      const progress = surfSecondsLeft / TOTAL_SURF_SECONDS;
-      surfTimerCircle.style.strokeDashoffset = circumference * (1 - progress);
-
-      // Breath phase sync (8 second cycles: 4s inhale, 4s exhale)
-      const cycle = surfSecondsLeft % 8;
-      if (cycle >= 4) {
-        surfPhaseText.textContent = "Breathe In (4s)";
-        surfPhaseText.className = "text-[11px] text-calmCyan uppercase tracking-widest mt-1";
-      } else {
-        surfPhaseText.textContent = "Slow Exhale (4s)";
-        surfPhaseText.className = "text-[11px] text-emeraldSafe uppercase tracking-widest mt-1";
-      }
-
-      // Rotate mindfulness prompt every 35 seconds
-      const promptIndex = Math.floor((TOTAL_SURF_SECONDS - surfSecondsLeft) / 35) % surfPrompts.length;
-      surfPrompt.textContent = `"${surfPrompts[promptIndex]}"`;
-    }
-
-    function toggleUrgeTimer() {
-      isSurfPaused = !isSurfPaused;
-      toggleSurfBtn.textContent = isSurfPaused ? "Resume Wave" : "Pause Wave";
-    }
-
-    function finishUrgeSurfer() {
-      closeUrgeSurfer();
-      appendMessage('aura', "You just rode that wave of urge for 3 full minutes. Take a second to feel that accomplishment. How does your chest and body feel right now?");
-      setAvatarState(AvatarState.SOOTHING, "Proud of you");
-    }
-
-    // --- Tool: 5-4-3-2-1 Grounding Exercise ---
-    const groundingModal = document.getElementById('groundingModal');
-    const groundStepNum = document.getElementById('groundStepNum');
-    const groundStepTitle = document.getElementById('groundStepTitle');
-    const groundStepDesc = document.getElementById('groundStepDesc');
-    const groundPrevBtn = document.getElementById('groundPrevBtn');
-    const groundNextBtn = document.getElementById('groundNextBtn');
-    const groundStepIndicator = document.getElementById('groundStepIndicator');
-
-    const groundingSteps = [
-      {
-        num: 5,
-        title: "Sight",
-        desc: "Look around right now. Acknowledge <strong>5 things you can see</strong> around you. A pen, a shadow on the wall, the edge of your screen."
-      },
-      {
-        num: 4,
-        title: "Touch",
-        desc: "Notice <strong>4 things you can physically feel</strong>. The fabric of your shirt, the cool phone in your palm, your feet flat on the floor."
-      },
-      {
-        num: 3,
-        title: "Sound",
-        desc: "Close your eyes for a moment. Listen for <strong>3 distinct sounds</strong>. An air conditioner, distant traffic, your own quiet breathing."
-      },
-      {
-        num: 2,
-        title: "Smell",
-        desc: "Notice <strong>2 things you can smell</strong>. Maybe fresh coffee, laundry detergent on your sleeve, or cool fresh air."
-      },
-      {
-        num: 1,
-        title: "Taste / Kindness",
-        desc: "Notice <strong>1 taste</strong> in your mouth (or take a sip of cool water). Then whisper one kind sentence to yourself: <em>'I am doing my best today.'</em>"
-      }
+    // --- Grounding 5-4-3-2-1 Engine ---
+    const groundModal = document.getElementById('groundModal');
+    const groundSteps = [
+      { num: 5, title: '5 Things you can see', desc: 'Look closely at your environment. Find 5 distinct colors, shapes, or textures.' },
+      { num: 4, title: '4 Things you can physically touch', desc: 'Feel the fabric of your sleeve, the cool glass of your phone, the floor under your feet.' },
+      { num: 3, title: '3 Things you can hear', desc: 'Listen beyond this room—distant traffic, a fan hum, or your own slow breath.' },
+      { num: 2, title: '2 Things you can smell', desc: 'Notice the air, your coffee, or simply take in a fresh lungful of air.' },
+      { num: 1, title: '1 Thing you are grateful for right now', desc: 'Name one thing keeping you grounded: a friend, a warm bed, or this current breath.' }
     ];
+    let currentStepIdx = 0;
 
-    let currentGroundStep = 0;
+    document.getElementById('openGroundBtn').addEventListener('click', () => {
+      currentStepIdx = 0;
+      updateGroundUI();
+      groundModal.classList.remove('hidden');
+    });
+    document.getElementById('closeGroundModal').addEventListener('click', () => groundModal.classList.add('hidden'));
 
-    function openGrounding() {
-      currentGroundStep = 0;
-      updateGroundingUI();
-      groundingModal.classList.remove('hidden');
-      groundingModal.classList.add('flex');
-      setAvatarState(AvatarState.SOOTHING, "Grounding with you");
-    }
+    function updateGroundUI() {
+      const step = groundSteps[currentStepIdx];
+      document.getElementById('groundStepNumber').innerText = step.num;
+      document.getElementById('groundStepTitle').innerText = step.title;
+      document.getElementById('groundStepDesc').innerText = step.desc;
 
-    function closeGrounding() {
-      groundingModal.classList.add('hidden');
-      groundingModal.classList.remove('flex');
-      setAvatarState(AvatarState.IDLE, "Present with you");
-    }
-
-    function updateGroundingUI() {
-      const step = groundingSteps[currentGroundStep];
-      groundStepNum.textContent = step.num;
-      groundStepTitle.textContent = step.title;
-      groundStepDesc.innerHTML = step.desc;
-      groundStepIndicator.textContent = `${currentGroundStep + 1} / 5`;
-
-      groundPrevBtn.disabled = currentGroundStep === 0;
-      groundNextBtn.textContent = currentGroundStep === groundingSteps.length - 1 ? "Complete Grounding" : "Found Them & Next";
-    }
-
-    function nextGroundingStep() {
-      if (currentGroundStep < groundingSteps.length - 1) {
-        currentGroundStep++;
-        updateGroundingUI();
+      const nextBtn = document.getElementById('nextGroundStepBtn');
+      if (currentStepIdx < groundSteps.length - 1) {
+        nextBtn.innerText = `Next: ${groundSteps[currentStepIdx + 1].title}`;
       } else {
-        closeGrounding();
-        appendMessage('aura', "You've grounded yourself back in the physical room. Your mind is safe here. I'm right by your side.");
+        nextBtn.innerText = 'Complete Grounding';
       }
     }
 
-    function prevGroundingStep() {
-      if (currentGroundStep > 0) {
-        currentGroundStep--;
-        updateGroundingUI();
+    document.getElementById('nextGroundStepBtn').addEventListener('click', () => {
+      if (currentStepIdx < groundSteps.length - 1) {
+        currentStepIdx++;
+        updateGroundUI();
+      } else {
+        groundModal.classList.add('hidden');
       }
-    }
-
-    // --- Tool: Info & Crisis Modal ---
-    const infoModal = document.getElementById('infoModal');
-    function toggleInfoModal() {
-      infoModal.classList.toggle('hidden');
-      infoModal.classList.toggle('flex');
-    }
+    });
   </script>
 </body>
 </html>
